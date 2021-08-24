@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
  * @create 2021-08-2021/8/20  15:56
  */
 
+
 @Mapper
 public interface UserMapper {
 

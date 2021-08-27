@@ -22,4 +22,15 @@ public interface demo2Constant {
      */
     int ACTIVATION_FAILURE = 2;
 
+    /**
+     * 默认超时时间
+     */
+    int DEFAULT_EXPIRED_SECONDS = 3600 * 12;
+
+    /**
+     * 记住状态下的凭证超时时间
+     */
+    int REMEMBER_EXPIRED_SECONDS = 3600 * 24 * 100;
+
+
 }

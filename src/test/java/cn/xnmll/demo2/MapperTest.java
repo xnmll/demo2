@@ -1,8 +1,10 @@
 package cn.xnmll.demo2;
 
 import cn.xnmll.demo2.dao.DiscussPostMapper;
+import cn.xnmll.demo2.dao.LoginTicketMapper;
 import cn.xnmll.demo2.dao.UserMapper;
 import cn.xnmll.demo2.entity.DisCussPost;
+import cn.xnmll.demo2.entity.LoginTicket;
 import cn.xnmll.demo2.entity.User;
 import lombok.var;
 import org.junit.Test;
@@ -29,6 +31,9 @@ public class MapperTest {
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     @Test
     public void testSelectUser() {
@@ -65,4 +70,27 @@ public class MapperTest {
         int rows = discussPostMapper.selectDiscussPostRows(0);
         System.out.println(rows);
     }
+
+    @Test
+    public void testIn() {
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
+        loginTicket.setUserId(101);
+        loginTicket.setTicket("abc");
+        loginTicket.setStatus(0);
+
+        loginTicketMapper.insertLoginTicket(loginTicket);
+    }
+
+    @Test
+    public void testS() {
+        LoginTicket loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+
+        loginTicketMapper.updateStatus("abc",1);
+
+        System.out.println(loginTicketMapper.selectByTicket("abc"));
+
+    }
+
 }

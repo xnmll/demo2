@@ -1,11 +1,15 @@
 package cn.xnmll.demo2.controller;
 
+import cn.xnmll.demo2.util.demo2Util;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.EnumMap;
@@ -106,6 +110,39 @@ public class AlphaController {
         emp.put("name","张三");
         emp.put("sarary",8000.00);
         return emp;
+    }
+
+    // cookie 示例
+    @RequestMapping(path = "/cookie/set",method = RequestMethod.GET)
+    @ResponseBody
+    public String setCookie(HttpServletResponse response) {
+        //创建cookie
+        Cookie cookie = new Cookie("code", demo2Util.generateUUID());
+        //设置cookie使用范围
+        cookie.setPath("/demo2");
+        //设置cookie生存时间
+        cookie.setMaxAge(60 * 10);
+        //发送cookie
+        response.addCookie(cookie);
+        return "set cookie";
+
+    }
+
+
+    //session示例
+    @RequestMapping(path = "/session/set",method = RequestMethod.GET)
+    @ResponseBody
+    public String getSession(HttpSession httpSession) {
+        httpSession.setAttribute("id",1);
+        httpSession.setAttribute("name","lcy");
+        return "session";
+    }
+
+    @RequestMapping(path = "/session/get",method = RequestMethod.GET)
+    @ResponseBody
+    public String gets(HttpSession httpSession) {
+        System.out.println(httpSession.getAttribute("name"));
+        return "11";
     }
 
 }

@@ -169,4 +169,9 @@ public class UserService implements demo2Constant {
     }
 
 
+    public User findUserByName(String username){
+        return userMapper.selectByName(username);
+    }
+
+
 }

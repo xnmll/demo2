@@ -2,9 +2,11 @@ package cn.xnmll.demo2;
 
 import cn.xnmll.demo2.dao.DiscussPostMapper;
 import cn.xnmll.demo2.dao.LoginTicketMapper;
+import cn.xnmll.demo2.dao.MessageMapper;
 import cn.xnmll.demo2.dao.UserMapper;
 import cn.xnmll.demo2.entity.DisCussPost;
 import cn.xnmll.demo2.entity.LoginTicket;
+import cn.xnmll.demo2.entity.Message;
 import cn.xnmll.demo2.entity.User;
 import lombok.var;
 import org.junit.Test;
@@ -34,6 +36,9 @@ public class MapperTest {
 
     @Autowired
     private LoginTicketMapper loginTicketMapper;
+
+    @Autowired
+    private MessageMapper messageMapper;
 
     @Test
     public void testSelectUser() {
@@ -92,5 +97,24 @@ public class MapperTest {
         System.out.println(loginTicketMapper.selectByTicket("abc"));
 
     }
+
+    @Test
+    public void testSelect() {
+//        List<Message> messages = messageMapper.selectConversations(111, 0, 20);
+//        for (var c : messages) {
+//            System.out.println(c);
+//        }
+        System.out.println(messageMapper.selectConversationCount(111));
+        System.out.println("-------------------");
+        List<Message> list = messageMapper.selectLetters("111_112", 0, 10);
+        for (var i : list)
+            System.out.println(i);
+        System.out.println("-------------------");
+        System.out.println(messageMapper.selectLetterCount("111_112"));
+        System.out.println("-------------------");
+
+    }
+
+
 
 }

@@ -6,6 +6,7 @@ import cn.xnmll.demo2.entity.Page;
 import cn.xnmll.demo2.entity.User;
 import cn.xnmll.demo2.service.CommentService;
 import cn.xnmll.demo2.service.DiscussPostService;
+import cn.xnmll.demo2.service.LikeService;
 import cn.xnmll.demo2.service.UserService;
 import cn.xnmll.demo2.util.HostHolder;
 import cn.xnmll.demo2.util.demo2Constant;
@@ -41,6 +42,9 @@ public class DiscussPostController implements demo2Constant {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private LikeService likeService;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -67,6 +71,14 @@ public class DiscussPostController implements demo2Constant {
         User userById = userService.findUserById(discussPostById.getUserId());
         model.addAttribute("user", userById);
 
+        //点赞
+        long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, discussPostId);
+        model.addAttribute("likeCount",likeCount);
+
+        //点赞状态
+        int likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_POST, discussPostId);
+        model.addAttribute("likeStatus",likeStatus);
+
         //评论的分页信息
         page.setLimit(5);
         page.setPath("/discuss/detail/" + discussPostId);
@@ -87,6 +99,16 @@ public class DiscussPostController implements demo2Constant {
                 commentVO.put("comment", comment);
                 commentVO.put("user", userService.findUserById(comment.getUserId()));
 
+
+                //点赞
+                likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
+                commentVO.put("likeCount",likeCount);
+
+                //点赞状态
+                likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
+                commentVO.put("likeStatus",likeStatus);
+
+
                 //回复列表
                 List<Comment> replyList = commentService.findCommentsByEntity(ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
 
@@ -99,6 +121,15 @@ public class DiscussPostController implements demo2Constant {
                         replyVO.put("reply",reply);
                         //作者
                         replyVO.put("user",userService.findUserById(reply.getUserId()));
+
+                        //点赞
+                        likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, reply.getId());
+                        replyVO.put("likeCount",likeCount);
+
+                        //点赞状态
+                        likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getId());
+                        replyVO.put("likeStatus",likeStatus);
+
                         //回复目标
                         User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                         replyVO.put("target",target);

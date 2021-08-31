@@ -2,6 +2,7 @@ package cn.xnmll.demo2.controller;
 
 import cn.xnmll.demo2.annotation.LoginRequired;
 import cn.xnmll.demo2.entity.User;
+import cn.xnmll.demo2.service.LikeService;
 import cn.xnmll.demo2.service.UserService;
 import cn.xnmll.demo2.util.HostHolder;
 import cn.xnmll.demo2.util.demo2Util;
@@ -49,6 +50,10 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
+
 
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
@@ -111,7 +116,19 @@ public class UserController {
         } catch (Exception e) {
             LOGGER.error("读取头像失败" + e.getMessage());
         }
+    }
 
+    //个人主页
+    @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId, Model model) {
+        User userById = userService.findUserById(userId);
+        if (userById == null) {
+            throw new RuntimeException("该用户不存在");
+        }
+        model.addAttribute("user", userById);
+        int userLikeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",userLikeCount);
+        return "/site/profile";
     }
 
 }

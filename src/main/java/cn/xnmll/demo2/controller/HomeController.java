@@ -4,7 +4,9 @@ import cn.xnmll.demo2.entity.DisCussPost;
 import cn.xnmll.demo2.entity.Page;
 import cn.xnmll.demo2.entity.User;
 import cn.xnmll.demo2.service.DiscussPostService;
+import cn.xnmll.demo2.service.LikeService;
 import cn.xnmll.demo2.service.UserService;
+import cn.xnmll.demo2.util.demo2Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,13 +24,17 @@ import java.util.Map;
  */
 
 @Controller
-public class HomeController {
+public class HomeController implements demo2Constant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
+
 
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page) {
@@ -43,6 +49,10 @@ public class HomeController {
                 map.put("post",post);
                 User userById = userService.findUserById(post.getUserId());
                 map.put("user",userById);
+
+                long entityLikeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount",entityLikeCount);
+
                 discussPost.add(map);
 
             }
@@ -50,5 +60,11 @@ public class HomeController {
         model.addAttribute("discussPosts",discussPost);
         return "/index";
     }
+
+    @RequestMapping(path = "/error",method = RequestMethod.GET)
+    public String getErrorPage(){
+        return "/error/500";
+    }
+
 
 }

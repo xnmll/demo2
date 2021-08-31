@@ -74,6 +74,7 @@ public class MessageController {
 
     @RequestMapping(path = "/letter/detail/{conversationId}", method = RequestMethod.GET)
     public String getLetterDetail(@PathVariable("conversationId") String conversationId, Page page, Model model) {
+        //Integer.valueOf("abc");
         //分页消息
         page.setLimit(5);
         page.setPath("/letter/detail/" + conversationId);

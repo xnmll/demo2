@@ -2,13 +2,16 @@ package cn.xnmll.demo2.controller;
 
 import cn.xnmll.demo2.entity.User;
 import cn.xnmll.demo2.service.UserService;
+import cn.xnmll.demo2.util.RedisKeyUtil;
 import cn.xnmll.demo2.util.demo2Constant;
+import cn.xnmll.demo2.util.demo2Util;
 import com.google.code.kaptcha.Producer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -25,6 +28,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author xnmll
@@ -46,6 +50,8 @@ public class LoginController implements demo2Constant {
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @RequestMapping(path = "/register", method = RequestMethod.GET)
     public String getRegisterPage() {
@@ -95,14 +101,26 @@ public class LoginController implements demo2Constant {
         String text = kaptchaProducer.createText();
         BufferedImage image = kaptchaProducer.createImage(text);
 
-        //将code存session
-        httpSession.setAttribute("kaptcha",text);
+//        //将code存session
+//        httpSession.setAttribute("kaptcha",text);
+
+        // 验证码的归属
+        String kaptchaOwner = demo2Util.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+
+        //将验证码存入redis
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS);
+
 
         //将图片给浏览器
         response.setContentType("image/png");
         try {
             OutputStream os = response.getOutputStream();
-            ImageIO.write(image,"png",os);
+            ImageIO.write(image, "png", os);
         } catch (IOException e) {
             LOGGER.error("响应验证码失败");
             e.printStackTrace();
@@ -110,13 +128,20 @@ public class LoginController implements demo2Constant {
 
     }
 
-    @RequestMapping(path = "/login",method = RequestMethod.POST)
-    public String login(String username, String password, String code, boolean rememberme,Model model,HttpSession httpSession, HttpServletResponse httpServletResponse) {
-        String kaptcha = (String) httpSession.getAttribute("kaptcha");
+    @RequestMapping(path = "/login", method = RequestMethod.POST)
+    public String login(String username, String password, String code,
+                        boolean rememberme, Model model, HttpSession httpSession,
+                        HttpServletResponse httpServletResponse, @CookieValue("kaptchaOwner") String kaptchaOwner) {
+//        String kaptcha = (String) httpSession.getAttribute("kaptcha");
+        String kaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)) {
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
 
         //检查验证码
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
-            model.addAttribute("codeMsg","验证码不正确");
+            model.addAttribute("codeMsg", "验证码不正确");
             return "site/login";
         }
 
@@ -124,22 +149,22 @@ public class LoginController implements demo2Constant {
         int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
         Map<String, Object> map = userService.login(username, password, expiredSeconds);
         if (map.containsKey("ticket")) {
-            Cookie cookie = new Cookie("ticket",map.get("ticket").toString());
+            Cookie cookie = new Cookie("ticket", map.get("ticket").toString());
             cookie.setPath(contextPath);
             cookie.setMaxAge(expiredSeconds);
             httpServletResponse.addCookie(cookie);
             return "redirect:/index";
         } else {
-            model.addAttribute("usernameMsg",map.get("usernameMsg"));
-            model.addAttribute("passwordMsg",map.get("passwordMsg"));
+            model.addAttribute("usernameMsg", map.get("usernameMsg"));
+            model.addAttribute("passwordMsg", map.get("passwordMsg"));
             return "/site/login";
         }
 
     }
 
 
-    @RequestMapping(path = "/logout",method = RequestMethod.GET)
-    public String logout(@CookieValue("ticket") String ticket){
+    @RequestMapping(path = "/logout", method = RequestMethod.GET)
+    public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
         return "redirect:/login";
     }

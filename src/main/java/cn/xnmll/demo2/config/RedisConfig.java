@@ -1,4 +1,4 @@
-package cn.xnmll.demo2.controller;
+package cn.xnmll.demo2.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

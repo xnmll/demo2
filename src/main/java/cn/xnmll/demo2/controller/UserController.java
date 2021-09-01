@@ -2,9 +2,11 @@ package cn.xnmll.demo2.controller;
 
 import cn.xnmll.demo2.annotation.LoginRequired;
 import cn.xnmll.demo2.entity.User;
+import cn.xnmll.demo2.service.FollowService;
 import cn.xnmll.demo2.service.LikeService;
 import cn.xnmll.demo2.service.UserService;
 import cn.xnmll.demo2.util.HostHolder;
+import cn.xnmll.demo2.util.demo2Constant;
 import cn.xnmll.demo2.util.demo2Util;
 import org.apache.catalina.Host;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +34,7 @@ import java.io.IOException;
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements demo2Constant {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
@@ -53,6 +55,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
 
     @LoginRequired
@@ -125,9 +130,24 @@ public class UserController {
         if (userById == null) {
             throw new RuntimeException("该用户不存在");
         }
+        //用户
         model.addAttribute("user", userById);
+        //点赞数量
         int userLikeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount",userLikeCount);
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount",followerCount);
+        //是否关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null) {
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+
         return "/site/profile";
     }
 

@@ -42,6 +42,9 @@ public interface demo2Constant {
      */
     int ENTITY_TYPE_COMMENT = 2;
 
-
+    /**
+     * 实体类型：人
+     */
+    int ENTITY_TYPE_USER = 3;
 
 }

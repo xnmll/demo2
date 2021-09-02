@@ -1,7 +1,9 @@
 package cn.xnmll.demo2.controller;
 
+import cn.xnmll.demo2.entity.Event;
 import cn.xnmll.demo2.entity.Page;
 import cn.xnmll.demo2.entity.User;
+import cn.xnmll.demo2.event.EventProducer;
 import cn.xnmll.demo2.service.FollowService;
 import cn.xnmll.demo2.service.UserService;
 import cn.xnmll.demo2.util.HostHolder;
@@ -27,6 +29,9 @@ import java.util.Map;
 public class FollowController implements demo2Constant {
 
     @Autowired
+    private EventProducer eventProducer;
+
+    @Autowired
     private HostHolder hostHolder;
 
     @Autowired
@@ -40,6 +45,16 @@ public class FollowController implements demo2Constant {
     public String follow(int entityType, int entityId) {
         User user = hostHolder.getUser();
         followService.follow(user.getId(), entityType, entityId);
+
+        //触发关注事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);
+        eventProducer.fireEvent(event);
+
         return demo2Util.getJSONString(0, "已关注");
     }
 

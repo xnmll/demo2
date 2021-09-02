@@ -101,7 +101,6 @@
         and conversation_id = #{topic}
     </select>
 
-
     <select id="selectNoticeUnreadCount" resultType="int">
         select count(id) from message
         where status =0
@@ -123,5 +122,8 @@
         order by create_time desc
         limit #{offset},#{limit}
     </select>
+
+
+
 
 </mapper>

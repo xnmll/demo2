@@ -3,6 +3,7 @@ package cn.xnmll.demo2.config;
 import cn.xnmll.demo2.controller.interceptor.AlphaInterceptor;
 import cn.xnmll.demo2.controller.interceptor.LoginRequireInterceptor;
 import cn.xnmll.demo2.controller.interceptor.LoginTicketInterceptor;
+import cn.xnmll.demo2.controller.interceptor.MessageInterceptor;
 import cn.xnmll.demo2.entity.LoginTicket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +28,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LoginTicketInterceptor loginTicketInterceptor;
 
+    @Autowired
+    private MessageInterceptor messageInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(alphaInterceptor)
@@ -35,6 +39,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginTicketInterceptor)
                 .excludePathPatterns("/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.jpeg");
         registry.addInterceptor(loginRequireInterceptor)
+                .excludePathPatterns("/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.jpeg");
+        registry.addInterceptor(messageInterceptor)
                 .excludePathPatterns("/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.jpeg");
     }
 

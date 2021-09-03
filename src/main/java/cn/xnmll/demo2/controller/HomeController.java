@@ -66,5 +66,10 @@ public class HomeController implements demo2Constant {
         return "/error/500";
     }
 
+    @RequestMapping(path = "/denied", method = RequestMethod.GET)
+    public String getDeniedPage() {
+        return "/error/404";
+    }
+
 
 }

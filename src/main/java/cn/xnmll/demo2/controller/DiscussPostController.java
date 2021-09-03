@@ -1,9 +1,7 @@
 package cn.xnmll.demo2.controller;
 
-import cn.xnmll.demo2.entity.Comment;
-import cn.xnmll.demo2.entity.DisCussPost;
-import cn.xnmll.demo2.entity.Page;
-import cn.xnmll.demo2.entity.User;
+import cn.xnmll.demo2.entity.*;
+import cn.xnmll.demo2.event.EventProducer;
 import cn.xnmll.demo2.service.CommentService;
 import cn.xnmll.demo2.service.DiscussPostService;
 import cn.xnmll.demo2.service.LikeService;
@@ -45,6 +43,9 @@ public class DiscussPostController implements demo2Constant {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -58,6 +59,15 @@ public class DiscussPostController implements demo2Constant {
         post.setCreateTime(new Date());
         post.setUserId(user.getId());
         discussPostService.addDiscuessPost(post);
+
+        //触发发帖事件
+
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityType(post.getId());
+        eventProducer.fireEvent(event);
 
         return demo2Util.getJSONString(0, "发布成功");
     }

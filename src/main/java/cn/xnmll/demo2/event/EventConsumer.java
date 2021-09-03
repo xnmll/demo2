@@ -1,7 +1,10 @@
 package cn.xnmll.demo2.event;
 
+import cn.xnmll.demo2.entity.DisCussPost;
 import cn.xnmll.demo2.entity.Event;
 import cn.xnmll.demo2.entity.Message;
+import cn.xnmll.demo2.service.DiscussPostService;
+import cn.xnmll.demo2.service.ElasticsearchService;
 import cn.xnmll.demo2.service.MessageService;
 import cn.xnmll.demo2.util.demo2Constant;
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +32,13 @@ public class EventConsumer implements demo2Constant {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private DiscussPostService discussPostService;
+
+    @Autowired
+    private ElasticsearchService elasticsearchService;
+
 
     @KafkaListener(topics = {TOPIC_COMMIT, TOPIC_FOLLOW, TOPIC_LIKE})
     public void handleCommentMessage(ConsumerRecord record) {
@@ -54,9 +65,9 @@ public class EventConsumer implements demo2Constant {
         content.put("entityType", event.getEntityType());
         content.put("entityId", event.getEntityId());
 
-        if (!event.getData().isEmpty()){
-            for (Map.Entry<String,Object> entry : event.getData().entrySet()) {
-                content.put(entry.getKey(),entry.getValue());
+        if (!event.getData().isEmpty()) {
+            for (Map.Entry<String, Object> entry : event.getData().entrySet()) {
+                content.put(entry.getKey(), entry.getValue());
             }
         }
 
@@ -64,5 +75,26 @@ public class EventConsumer implements demo2Constant {
         messageService.addMessage(message);
 
     }
+
+    //消费发帖事件
+    @KafkaListener(topics = {TOPIC_PUBLISH})
+    public void handlePublishMessage(ConsumerRecord record) {
+        if (record == null || record.value() == null) {
+            LOGGER.error("消息为空");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            LOGGER.error("消息格式有误");
+            return;
+        }
+
+        DisCussPost disCussPost = discussPostService.findDiscussPostById(event.getEntityId());
+        elasticsearchService.saveDiscussPost(disCussPost);
+
+
+    }
+
 
 }

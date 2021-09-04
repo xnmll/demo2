@@ -96,5 +96,25 @@ public class EventConsumer implements demo2Constant {
 
     }
 
+    //消费删帖事件
+    @KafkaListener(topics = {TOPIC_DELETE})
+    public void handleDeleteMessage(ConsumerRecord record) {
+        if (record == null || record.value() == null) {
+            LOGGER.error("消息为空");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            LOGGER.error("消息格式有误");
+            return;
+        }
+
+        //DisCussPost disCussPost = discussPostService.findDiscussPostById(event.getEntityId());
+        elasticsearchService.deleteDiscussPost(event.getEntityId());
+
+
+    }
+
 
 }

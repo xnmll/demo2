@@ -50,7 +50,7 @@ public interface demo2Constant {
     /**
      * 主题：评论
      */
-    String TOPIC_COMMIT = "commit";
+    String TOPIC_COMMIT = "comment";
 
     /**
      * 主题：点赞
@@ -66,6 +66,11 @@ public interface demo2Constant {
      * 主题：发帖
      */
     String TOPIC_PUBLISH = "publish";
+
+    /**
+     * 主题：删帖
+     */
+    String TOPIC_DELETE = "delete";
 
     /**
      * 系统用户ID

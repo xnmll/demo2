@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +48,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements demo
                         AUTHORITY_USER,
                         AUTHORITY_ADMIN,
                         AUTHORITY_MODERATOR
+                )
+                .antMatchers(
+                        "/discuss/wonderful",
+                        "/discuss/top"
+                )
+                .hasAnyAuthority(
+                        AUTHORITY_MODERATOR
+                )
+                .antMatchers(
+                        "/discuss/delete"
+                )
+                .hasAnyAuthority(
+                        AUTHORITY_ADMIN
                 )
                 .anyRequest().permitAll()
                 .and().csrf().disable();

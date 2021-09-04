@@ -12,10 +12,7 @@ import cn.xnmll.demo2.util.demo2Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -83,11 +80,11 @@ public class DiscussPostController implements demo2Constant {
 
         //点赞
         long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, discussPostId);
-        model.addAttribute("likeCount",likeCount);
+        model.addAttribute("likeCount", likeCount);
 
         //点赞状态
         int likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_POST, discussPostId);
-        model.addAttribute("likeStatus",likeStatus);
+        model.addAttribute("likeStatus", likeStatus);
 
         //评论的分页信息
         page.setLimit(5);
@@ -112,52 +109,110 @@ public class DiscussPostController implements demo2Constant {
 
                 //点赞
                 likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
-                commentVO.put("likeCount",likeCount);
+                commentVO.put("likeCount", likeCount);
 
                 //点赞状态
                 likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
-                commentVO.put("likeStatus",likeStatus);
+                commentVO.put("likeStatus", likeStatus);
 
 
                 //回复列表
                 List<Comment> replyList = commentService.findCommentsByEntity(ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
 
-                List<Map<String,Object>> replyVOList = new ArrayList<>();
+                List<Map<String, Object>> replyVOList = new ArrayList<>();
 
                 if (replyList != null) {
                     for (Comment reply : replyList) {
-                        Map<String,Object> replyVO = new HashMap<>();
+                        Map<String, Object> replyVO = new HashMap<>();
                         //回复
-                        replyVO.put("reply",reply);
+                        replyVO.put("reply", reply);
                         //作者
-                        replyVO.put("user",userService.findUserById(reply.getUserId()));
+                        replyVO.put("user", userService.findUserById(reply.getUserId()));
 
                         //点赞
                         likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, reply.getId());
-                        replyVO.put("likeCount",likeCount);
+                        replyVO.put("likeCount", likeCount);
 
                         //点赞状态
                         likeStatus = hostHolder.getUser() == null ? 0 : likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getId());
-                        replyVO.put("likeStatus",likeStatus);
+                        replyVO.put("likeStatus", likeStatus);
 
                         //回复目标
                         User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
-                        replyVO.put("target",target);
+                        replyVO.put("target", target);
                         replyVOList.add(replyVO);
                     }
                 }
-                commentVO.put("replys",replyVOList);
+                commentVO.put("replys", replyVOList);
 
                 //回复数量
                 int replyCount = commentService.findCommentCount(ENTITY_TYPE_COMMENT, comment.getId());
 
-                commentVO.put("replyCount",replyCount);
+                commentVO.put("replyCount", replyCount);
                 commentVOList.add(commentVO);
             }
         }
-        model.addAttribute("comments",commentVOList);
+        model.addAttribute("comments", commentVOList);
 
         return "/site/discuss-detail";
     }
+
+    // 置顶
+    @RequestMapping(path = "/top", method = RequestMethod.POST)
+    @ResponseBody
+    public String setTop(int id) {
+        discussPostService.updateType(id, 1);
+
+        //触发发帖事件
+
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityType(id);
+        eventProducer.fireEvent(event);
+
+        return demo2Util.getJSONString(0);
+
+    }
+
+    // 加精
+    @RequestMapping(path = "/wonderful", method = RequestMethod.POST)
+    @ResponseBody
+    public String setWonderful(int id) {
+        discussPostService.updateStatus(id,1);
+
+        //触发发帖事件
+
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityType(id);
+        eventProducer.fireEvent(event);
+
+        return demo2Util.getJSONString(0);
+
+    }
+
+    // 删除
+    @RequestMapping(path = "/delete", method = RequestMethod.POST)
+    @ResponseBody
+    public String setDelete(int id) {
+        discussPostService.updateStatus(id,2);
+
+        //触发删帖事件
+
+        Event event = new Event()
+                .setTopic(TOPIC_DELETE)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityType(id);
+        eventProducer.fireEvent(event);
+
+        return demo2Util.getJSONString(0);
+
+    }
+
 
 }

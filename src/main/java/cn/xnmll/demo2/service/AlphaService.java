@@ -5,7 +5,10 @@ import cn.xnmll.demo2.dao.UserMapper;
 import cn.xnmll.demo2.entity.DisCussPost;
 import cn.xnmll.demo2.entity.User;
 import cn.xnmll.demo2.util.demo2Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -26,6 +29,8 @@ import java.util.Date;
 
 @Service
 public class AlphaService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaService.class);
 
     @Autowired
     private UserMapper userMapper;
@@ -109,6 +114,12 @@ public class AlphaService {
             }
         });
         
+    }
+
+    //让该方法在多线程环境下，被异步的调用
+    @Async
+    public void e1() {
+        LOGGER.debug("e1");
     }
 
 

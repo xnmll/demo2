@@ -116,11 +116,11 @@ public class AlphaService {
         
     }
 
-    //让该方法在多线程环境下，被异步的调用
-    @Async
-    public void e1() {
-        LOGGER.debug("e1");
-    }
+//    //让该方法在多线程环境下，被异步的调用
+//    @Async
+//    public void e1() {
+//        LOGGER.debug("e1");
+//    }
 
 
 }

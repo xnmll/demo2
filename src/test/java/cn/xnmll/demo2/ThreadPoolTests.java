@@ -115,12 +115,7 @@ public class ThreadPoolTests {
     }
 
     //
-    @Test
-    public void test5() {
-        for (int i = 0 ;i < 10; i ++ )
-            alphaService.e1();
-        sleep(20000);
-    }
+
 
 
 }

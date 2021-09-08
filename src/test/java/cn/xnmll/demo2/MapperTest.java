@@ -66,15 +66,15 @@ public class MapperTest {
         System.out.println(user.getId());
     }
 
-    @Test
-    public void testSelectPosts(){
-        List<DisCussPost> disCussPosts = discussPostMapper.selectDiscussPosts(0, 0, 10);
-//        for (DisCussPost a : disCussPosts) {
-//            System.out.println(a);
-//        }
-        int rows = discussPostMapper.selectDiscussPostRows(0);
-        System.out.println(rows);
-    }
+//    @Test
+//    public void testSelectPosts(){
+//        List<DisCussPost> disCussPosts = discussPostMapper.selectDiscussPosts(0, 0, 10);
+////        for (DisCussPost a : disCussPosts) {
+////            System.out.println(a);
+////        }
+//        int rows = discussPostMapper.selectDiscussPostRows(0);
+//        System.out.println(rows);
+//    }
 
     @Test
     public void testIn() {

@@ -7,9 +7,11 @@ import cn.xnmll.demo2.service.DiscussPostService;
 import cn.xnmll.demo2.service.LikeService;
 import cn.xnmll.demo2.service.UserService;
 import cn.xnmll.demo2.util.HostHolder;
+import cn.xnmll.demo2.util.RedisKeyUtil;
 import cn.xnmll.demo2.util.demo2Constant;
 import cn.xnmll.demo2.util.demo2Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +45,9 @@ public class DiscussPostController implements demo2Constant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -65,6 +70,11 @@ public class DiscussPostController implements demo2Constant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityType(post.getId());
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,post.getId());
+
 
         return demo2Util.getJSONString(0, "发布成功");
     }
@@ -190,6 +200,11 @@ public class DiscussPostController implements demo2Constant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityType(id);
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, id);
+
 
         return demo2Util.getJSONString(0);
 
